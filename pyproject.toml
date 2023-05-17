@@ -12,6 +12,11 @@ pandas = "^1.5.3"
 colorama = "^0.4.6"
 tqdm = "^4.65.0"
 ruff = "^0.0.267"
+google-cloud-vision = "^3.4.1"
+google-cloud-storage = "^2.9.0"
+opencv-python = "^4.7.0.72"
+fuzzywuzzy = "^0.18.0"
+python-levenshtein = "^0.21.0"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
