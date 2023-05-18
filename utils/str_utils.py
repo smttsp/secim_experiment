@@ -19,4 +19,4 @@ def string_matching(word, target):
     token_sort_ratio = fuzz.token_sort_ratio(word, target)
     token_set_ratio = fuzz.token_set_ratio(word, target)
 
-    return (similarity_ratio + partial_ratio + token_sort_ratio + token_set_ratio) / 4
+    return (similarity_ratio + partial_ratio + token_sort_ratio + token_set_ratio) / 4 / 100.
