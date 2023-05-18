@@ -111,7 +111,27 @@ def get_separators_for_votes(candidates, important_locations):
     return horz_separators
 
 
-def get_votes_per_candidate(annotations, candidates, horz_separators):
+def get_vert_separators_for_votes(num_format, important_locations):
+
+    rakam = important_locations[num_format[0]][0]["xyxy"]
+    yazi = important_locations[num_format[1]][0]["xyxy"]
+
+    rakam_endx = rakam[2]
+    yazi_begx = yazi[0]
+
+    vert_mid_separator = int((3 * rakam_endx + yazi_begx) / 4)
+
+    rakam_center = get_midpoint(rakam, rakam, axis="vert")
+    yazi_center = get_midpoint(yazi, yazi, axis="vert")
+
+    v1 = 2 * rakam_center - vert_mid_separator
+    v3 = 2 * yazi_center - vert_mid_separator
+
+    vert_separators = [v1, vert_mid_separator, v3]
+
+    return vert_separators
+
+
 def get_votes_per_candidate(annotations, candidates, num_format, horz_separators, vert_separators):
     candidates_wtotal = list(candidates)
     candidates_wtotal.append("total")
@@ -140,7 +160,7 @@ def get_votes_per_candidate(annotations, candidates, num_format, horz_separators
 
     return results
 
-def get_votes(annotations, candidates=CANDIDATES):
+
 
     important_locations = get_important_locations(candidates, annotations)
     horz_separators = get_separators_for_votes(candidates, important_locations)
