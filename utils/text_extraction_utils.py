@@ -161,11 +161,59 @@ def get_votes_per_candidate(annotations, candidates, num_format, horz_separators
     return results
 
 
+def determine_vote_counts(results, num_format):
+    """Determining vote counts from the text-predictions & line adjustments.
+    the results format is as follows:
 
-    important_locations = get_important_locations(candidates, annotations)
-    horz_separators = get_separators_for_votes(candidates, important_locations)
+    {
+        candidate: {"yaziyla(string)": cnt1, "rakamla(digit)": cnt2 }
+    }
 
-    parallel_lines = get_parallel_lines(candidates, important_locations)
+    if for a candidate,
+    1. both string and digit are the same, pick that number
+    2. one of them is negative (-1, -2 or -3, each indicate different failure), then pick the other number
+    3. if both conflict, try all combinations and pick the best matches
+
+    Args:
+        results (dict):
+        num_format:
+
+    Returns:
+
+    """
+
+    final_counts = dict()
+
+    for candidate, vote_counts in results.items():
+        dig_cnt = vote_counts[num_format[0]]
+        str_cnt = vote_counts[num_format[1]]
+
+        # 1
+        if dig_cnt == str_cnt:
+            final_counts[candidate] = dig_cnt
+        elif dig_cnt < 0 <= str_cnt:
+            final_counts[candidate] = str_cnt
+        elif dig_cnt >= 0 > str_cnt:
+            final_counts[candidate] = dig_cnt
+        elif dig_cnt < 0 and str_cnt < 0:
+            final_counts[candidate] = 0
+
+    total_up_to_now = sum(list(final_counts.values()))
+    total_up_to_now = total_up_to_now - final_counts.get("total", 0)
+
+    # traverse and find the correct numbers, also make sure that the sum adds up to total.
+    #   notice total can be wrong
+    if len(final_counts) != len(results):
+        pass
+
+    return final_counts
 
 
+def get_votes(annotations, candidates=CANDIDATES, num_format=NUM_FORMAT):
+    important_locations = get_important_locations(candidates, num_format, annotations)
+    horz_separators = get_horz_separators_for_votes(candidates, important_locations)
+    vert_separators = get_vert_separators_for_votes(num_format, important_locations)
+    results = get_votes_per_candidate(annotations, candidates, num_format, horz_separators, vert_separators)
+
+    final_results = determine_vote_counts(results, num_format)
     return important_locations
