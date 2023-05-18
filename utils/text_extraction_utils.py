@@ -4,6 +4,9 @@ import cv2
 from PIL import Image
 from google.cloud.vision_v1 import types
 from utils.str_utils import remove_turkish_chars, string_matching
+from pprint import pprint
+
+CANDIDATES = ("recep", "muharrem", "kemal", "sinan")
 
 
 def get_annotations(vision_client, image_uri):
@@ -21,7 +24,6 @@ def get_annotations(vision_client, image_uri):
     response = vision_client.text_detection(image=image)
     annotations = response.text_annotations
 
-    # Print the extracted text
     # if annotations:
     #     print(annotations[0].description)
     # else:
@@ -55,22 +57,31 @@ def get_converted_image(im_arr, annotations):
     return converted_image
 
 
-def get_votes(annotations):
-    a_dict = {
-        "recep": [],
-        "muharrem": [],
-        "kemal": [],
-        "sinan": [],
-    }
+def get_important_locations(candidates, annotations):
+    important_locations = {can: [] for can in candidates}
+
+    important_locations.update(
+        {
+            "rakamla": [],
+            "yaziyla": [],
+            # "toplam": []
+        }
+    )
 
     for ann in annotations[1:]:
         word = remove_turkish_chars(ann.description.lower())
 
-        upper_left = ann.bounding_poly.vertices[0]
-        x, y = upper_left.x, upper_left.y
+        xs = set()
+        ys = set()
 
-        for key in a_dict.keys():
+        for ver in ann.bounding_poly.vertices:
+            xs.add(ver.x)
+            ys.add(ver.y)
+        xyxy = (min(xs), min(ys), max(xs), max(ys))
+
+        for key in important_locations.keys():
             ratio = string_matching(word, key)
-            if ratio > 0.8:
-                a_dict[key].append({"x": x, "y": y})
-    return a_dict
+            if ratio > 0.85:
+                important_locations[key].append({"xyxy": xyxy, "ratio": ratio})
+
+    return important_locations
