@@ -107,23 +107,38 @@ def get_separators_for_votes(candidates, important_locations):
     horz_separators.insert(0, horz_separators[0] - diff)
     horz_separators.append(horz_separators[-1] + diff)
     horz_separators.append(horz_separators[-1] + diff)
+
     return horz_separators
 
 
 def get_votes_per_candidate(annotations, candidates, horz_separators):
+def get_votes_per_candidate(annotations, candidates, num_format, horz_separators, vert_separators):
     candidates_wtotal = list(candidates)
     candidates_wtotal.append("total")
 
+    results = defaultdict(dict)
     for cand, up_line, low_line in zip(candidates_wtotal, horz_separators[:-1],  horz_separators[1:]):
         print(cand)
-        for ann in annotations[1:]:
-            word = remove_turkish_chars(ann.description.lower())
+        for format, left_line, right_line in zip(num_format, vert_separators[:-1], vert_separators[1:]):
+            print(format)
+            words = []
+            for ann in annotations[1:]:
+                word = replace_turkish_chars(ann.description.lower())
 
-            y_mean = numpy.mean(list({ver.y for ver in ann.bounding_poly.vertices}))
-            if up_line < y_mean < low_line:
-                print(word)
+                y_center = numpy.mean(list({ver.y for ver in ann.bounding_poly.vertices}))
+                x_center = numpy.mean(list({ver.x for ver in ann.bounding_poly.vertices}))
+
+                if up_line < y_center < low_line and left_line < x_center < right_line:
+                    print("----", word)
+                    words.append(word)
+            output = " ".join(words)
+            num = get_number(format, output)
+            results[cand][format] = num
+
+            print("###")
         print("----\n")
 
+    return results
 
 def get_votes(annotations, candidates=CANDIDATES):
 
