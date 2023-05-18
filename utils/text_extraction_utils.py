@@ -3,10 +3,12 @@ import numpy
 import cv2
 from PIL import Image
 from google.cloud.vision_v1 import types
-from utils.str_utils import remove_turkish_chars, string_matching
+from utils.str_utils import replace_turkish_chars, string_matching, get_number
 from pprint import pprint
+from collections import defaultdict
 
 CANDIDATES = ("recep", "muharrem", "kemal", "sinan")
+NUM_FORMAT = ("rakamla", "yaziyla")
 
 
 def get_annotations(vision_client, image_uri):
@@ -41,7 +43,7 @@ def get_converted_image(im_arr, annotations):
     converted_image = numpy.ones_like(im_arr) * 255
 
     for ann in annotations[1:]:
-        word = remove_turkish_chars(ann.description.lower())
+        word = replace_turkish_chars(ann.description.lower())
 
         upper_left = ann.bounding_poly.vertices[0]
         x, y = upper_left.x, upper_left.y
@@ -57,19 +59,13 @@ def get_converted_image(im_arr, annotations):
     return converted_image
 
 
-def get_important_locations(candidates, annotations):
+def get_important_locations(candidates, count_info, annotations):
     important_locations = {can: [] for can in candidates}
 
-    important_locations.update(
-        {
-            "rakamla": [],
-            "yaziyla": [],
-            # "toplam": []
-        }
-    )
+    important_locations.update({cnt: [] for cnt in count_info})
 
     for ann in annotations[1:]:
-        word = remove_turkish_chars(ann.description.lower())
+        word = replace_turkish_chars(ann.description.lower())
 
         xs = set()
         ys = set()
@@ -91,16 +87,22 @@ def get_parallel_lines(candidates, important_locations):
     pass
 
 
-def get_mid_horizontal_point(xyxy1, xyxy2):
-    mid = (xyxy1[-1] + xyxy2[1]) / 2
-    return int(mid)
+def get_midpoint(xyxy1, xyxy2, axis="horz"):
+    if axis == "horz":
+        mid = (xyxy1[-1] + xyxy2[1])
+    else:
+        mid = (xyxy1[-2] + xyxy2[0])
+
+    return int(mid / 2)
 
 
-def get_separators_for_votes(candidates, important_locations):
+def get_horz_separators_for_votes(candidates, important_locations):
     horz_separators = []
     for c1, c2 in zip(candidates[:-1], candidates[1:]):
         # print(important_locations[c1], important_locations[c2])
-        mid = get_mid_horizontal_point(important_locations[c1][0]["xyxy"], important_locations[c2][0]["xyxy"])
+        mid = get_midpoint(
+            important_locations[c1][0]["xyxy"], important_locations[c2][0]["xyxy"], axis="horz"
+        )
         horz_separators.append(mid)
 
     diff = horz_separators[1] - horz_separators[0]
