@@ -9,6 +9,7 @@ from google.cloud.vision_v1 import types
 from utils.str_utils import replace_turkish_chars
 from utils.text_extraction_utils import get_converted_image, get_annotations, get_votes
 import google.auth
+
 credentials, project = google.auth.default()
 vision_client = vision_v1.ImageAnnotatorClient(credentials=credentials)
 

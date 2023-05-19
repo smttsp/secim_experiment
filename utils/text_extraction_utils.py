@@ -13,7 +13,7 @@ NUM_FORMAT = ("rakamla", "yaziyla")
 
 def get_annotations(vision_client, image_uri):
     # Load the image from Google Cloud Storage
-    with io.open(image_uri, 'rb') as image_file:
+    with io.open(image_uri, "rb") as image_file:
         content = image_file.read()
 
     image = types.Image(content=content)
@@ -89,9 +89,9 @@ def get_parallel_lines(candidates, important_locations):
 
 def get_midpoint(xyxy1, xyxy2, axis="horz"):
     if axis == "horz":
-        mid = (xyxy1[-1] + xyxy2[1])
+        mid = xyxy1[-1] + xyxy2[1]
     else:
-        mid = (xyxy1[-2] + xyxy2[0])
+        mid = xyxy1[-2] + xyxy2[0]
 
     return int(mid / 2)
 
@@ -114,7 +114,6 @@ def get_horz_separators_for_votes(candidates, important_locations):
 
 
 def get_vert_separators_for_votes(num_format, important_locations):
-
     rakam = important_locations[num_format[0]][0]["xyxy"]
     yazi = important_locations[num_format[1]][0]["xyxy"]
 
@@ -139,9 +138,13 @@ def get_votes_per_candidate(annotations, candidates, num_format, horz_separators
     candidates_wtotal.append("total")
 
     results = defaultdict(dict)
-    for cand, up_line, low_line in zip(candidates_wtotal, horz_separators[:-1],  horz_separators[1:]):
+    for cand, up_line, low_line in zip(
+        candidates_wtotal, horz_separators[:-1], horz_separators[1:]
+    ):
         print(cand)
-        for format, left_line, right_line in zip(num_format, vert_separators[:-1], vert_separators[1:]):
+        for format, left_line, right_line in zip(
+            num_format, vert_separators[:-1], vert_separators[1:]
+        ):
             print(format)
             words = []
             for ann in annotations[1:]:
@@ -215,7 +218,9 @@ def get_votes(annotations, candidates=CANDIDATES, num_format=NUM_FORMAT):
     important_locations = get_important_locations(candidates, num_format, annotations)
     horz_separators = get_horz_separators_for_votes(candidates, important_locations)
     vert_separators = get_vert_separators_for_votes(num_format, important_locations)
-    results = get_votes_per_candidate(annotations, candidates, num_format, horz_separators, vert_separators)
+    results = get_votes_per_candidate(
+        annotations, candidates, num_format, horz_separators, vert_separators
+    )
 
     final_results = determine_vote_counts(results, num_format)
     return important_locations
