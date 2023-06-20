@@ -2,7 +2,9 @@
 
 This repo aims to create a converter from image to text for signed ballot records (islak imzali secim tutanaklari), and it will read an image and return how many votes each candidate got. 
 
-It is not complete, but early result are here: https://github.com/smttsp/secim_experiment/blob/main/tutanak_input-output.zip. I connected to google vision API but I realized a better tool would be google Document API. I didn't like the initial results of how Vision API reads. If I see a little that opposition is not as useless as they seem, I will work to integrate this tool into other open tools written by bright people for  securing the elections.
+It is not complete, but early result are here: https://github.com/smttsp/secim_experiment/blob/main/tutanak_input-output.zip. I connected to Google Vision API but I didn't like the initial results of how Vision API reads the images. I realized a better tool would be Google Document API.
+
+If I see a little light that opposition is not as useless as they seem, I will work on integrating this tool into other open tools written by bright people for securing the elections.
 
 ## Installation
 
